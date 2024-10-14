@@ -14,9 +14,8 @@
             <Button Content="Losuj stan" Command="{Binding RandomizeCommand}" />
             <Button Content="Wyczyść" Command="{Binding ClearCommand}" />
             <Separator Margin="10"/>
-            <Button Content="Start" Command="{Binding StartCommand}" />
-            <Button Content="Stop" Command="{Binding StopCommand}" />
-            <Button Content="Następny krok" Command="{Binding StepCommand}" />
+            <Button Content="{Binding ButtonLabel}" Command="{Binding ToggleSimulationCommand}"/>
+            <Button Content="Następny krok" Command="{Binding StepCommand}"/>
             <Label Content="Prędkość:"/>
             <Slider Minimum="1" Maximum="10" Value="{Binding Speed}" />
             <Separator Margin="10"/>

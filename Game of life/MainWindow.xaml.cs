@@ -23,6 +23,25 @@ namespace Game_of_life
             this.DataContext = new GameViewModel();
             DrawCells();
         }
+        private Shape CellRepresentation(GameViewModel.GraphicalRepresentation representation, Cell cell)
+        {
+            if (representation == GameViewModel.GraphicalRepresentation.Circle)
+                return new Ellipse
+                {
+                    Width = cellSize,
+                    Height = cellSize,
+                    Fill = cell.IsAlive ? Brushes.Black : Brushes.White,
+                    Tag = cell
+                };
+            else
+                return new Rectangle
+                {
+                    Width = cellSize,
+                    Height = cellSize,
+                    Fill = cell.IsAlive ? Brushes.Black : Brushes.White,
+                    Tag = cell
+                };
+        }
 
         private void DrawCells()
         {
@@ -35,24 +54,18 @@ namespace Game_of_life
                 for(int column = 0; column < board.Columns; column++)
                 {
                     var cell = board.Cells[row, column];
-                    var rectangle = new Rectangle
-                    {
-                        Width = cellSize,
-                        Height = cellSize,
-                        Fill = cell.IsAlive ? Brushes.Black : Brushes.White,
-                        Tag = cell
-                    };
+                    var shape = CellRepresentation(gameViewModel.Representation, cell);
                     cell.PropertyChanged += (s, e) =>
                     {
                         if (e.PropertyName == nameof(Cell.IsAlive))
                         {
-                            rectangle.Fill = cell.IsAlive ? Brushes.Green : Brushes.White;
+                            shape.Fill = cell.IsAlive ? Brushes.Green : Brushes.White;
                         }
                     };
 
-                    Canvas.SetLeft(rectangle, column * cellSize);
-                    Canvas.SetTop(rectangle, row * cellSize);
-                    GameBoard.Children.Add(rectangle);
+                    Canvas.SetLeft(shape, column * cellSize);
+                    Canvas.SetTop(shape, row * cellSize);
+                    GameBoard.Children.Add(shape);
                 }
             }
         }
