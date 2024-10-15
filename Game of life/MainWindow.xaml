@@ -9,8 +9,8 @@
     <Grid>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="200" Margin="10">
             <Label Content="Rozmiar planszy:"/>
-            <TextBox Name="BoardSizeTextBox" Text="100" />
-            <Button Content="Ustaw rozmiar" Command="{Binding SetBoardSizeCommand}" />
+            <TextBox Name="BoardSizeTextBox" Text="{Binding BoardSize, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Content="Ustaw rozmiar" Command="{Binding SetBoardSizeCommand}" Click="Redraw_Click" />
             <Button Content="Losuj stan" Command="{Binding RandomizeCommand}" />
             <Button Content="Wyczyść" Command="{Binding ClearCommand}" />
             <Separator Margin="10"/>
@@ -23,6 +23,7 @@
             <TextBlock Text="{Binding GenerationCount, StringFormat='Liczba pokoleń: {0}'}" />
             <TextBlock Text="{Binding CellsBorn, StringFormat='Ilość narodzin: {0}'}" />
             <TextBlock Text="{Binding CellsDied, StringFormat='Ilość śmierci: {0}'}" />
+            <Button Content="Zmień reprezentację" Click="Redraw_Click" Command="{Binding ToggleCellRepresentationCommand}"/>
         </StackPanel>
 
         <Canvas Name="GameBoard" Background="LightGray" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="220,10,10,10" />

@@ -23,6 +23,10 @@ namespace Game_of_life
             this.DataContext = new GameViewModel();
             DrawCells();
         }
+        private void Redraw_Click(object sender, RoutedEventArgs e)
+        { 
+            DrawCells();
+        }
         private Shape CellRepresentation(GameViewModel.GraphicalRepresentation representation, Cell cell)
         {
             if (representation == GameViewModel.GraphicalRepresentation.Circle)
@@ -47,19 +51,21 @@ namespace Game_of_life
         {
             GameBoard.Children.Clear();
 
-            var gameViewModel = (GameViewModel)DataContext;
+            var gameViewModel = (GameViewModel)DataContext;   
             var board = gameViewModel.Board;
             for(int row = 0; row < board.Rows; row++)
             {
                 for(int column = 0; column < board.Columns; column++)
                 {
                     var cell = board.Cells[row, column];
-                    var shape = CellRepresentation(gameViewModel.Representation, cell);
+                    var representation = gameViewModel.Representation;
+                    var shape = CellRepresentation(representation, cell);
+
                     cell.PropertyChanged += (s, e) =>
                     {
                         if (e.PropertyName == nameof(Cell.IsAlive))
                         {
-                            shape.Fill = cell.IsAlive ? Brushes.Green : Brushes.White;
+                            shape.Fill = cell.IsAlive ? Brushes.Black : Brushes.White;
                         }
                     };
 

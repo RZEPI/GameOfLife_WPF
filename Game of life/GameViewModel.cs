@@ -7,13 +7,14 @@ namespace Game_of_life
     public class GameViewModel : INotifyPropertyChanged
     {
         private Board _board;
+        private int _boardSize;
         private string _buttonLabel;
         private int _generationCount;
         private int _cellsBorn;
         private int _cellsDied;
         private bool _isRunning;
         private int _speed;
-        private GraphicalRepresentation _representation = GraphicalRepresentation.Circle;
+        private GraphicalRepresentation _representation;
 
         public Board Board
         {
@@ -22,6 +23,18 @@ namespace Game_of_life
             {
                 _board = value;
                 OnPropertyChanged(nameof(Board));
+            }
+        }
+        public int BoardSize
+        {
+            get => _boardSize;
+            set
+            {
+                if (_boardSize != value)
+                {
+                    _boardSize = value;
+                    OnPropertyChanged(nameof(BoardSize));
+                }
             }
         }
 
@@ -100,10 +113,12 @@ namespace Game_of_life
         public ICommand IncreaseSpeedCommand { get; }
         public ICommand DecreaseSpeedCommand { get; }
         public ICommand SetBoardSizeCommand { get;}
+        public ICommand ToggleCellRepresentationCommand { get; }
 
         public GameViewModel()
         {
-            Board = new Board(100);
+            BoardSize = 100;
+            Board = new Board(BoardSize);
             ButtonLabel = "Start";
             StepCommand = new RelayCommand(ExecuteStep, CanExecuteStep);
             ToggleSimulationCommand = new RelayCommand(ToggleSimulation);
@@ -111,12 +126,17 @@ namespace Game_of_life
             RandomizeCommand = new RelayCommand(RandomizeBoard);
             IncreaseSpeedCommand = new RelayCommand(() => Speed++);
             DecreaseSpeedCommand = new RelayCommand(() => Speed--);
-            SetBoardSizeCommand = new RelayCommand<int>(SetBoardSize);
+            SetBoardSizeCommand = new RelayCommand(SetBoardSize);
+            ToggleCellRepresentationCommand = new RelayCommand(ToggleCellRepresentation);
+            Representation = GraphicalRepresentation.Circle;
         }
-        private void SetBoardSize(int size)
+        private void SetBoardSize()
         {
-            Board = new Board(size);
-            ClearBoard();
+            if(BoardSize < 10 || BoardSize > 1000)
+                return;
+
+            Board = new Board(BoardSize);
+            RandomizeBoard();
         }
 
         private void ExecuteStep()
@@ -165,9 +185,13 @@ namespace Game_of_life
 
         private void RandomizeBoard()
         {
+            _isRunning = false;
             this.ClearBoard();
             Board.Randomize();
-            _isRunning = false;
+        }
+        private void ToggleCellRepresentation()
+        {
+            Representation = Representation == GraphicalRepresentation.Circle ? GraphicalRepresentation.Rectangle : GraphicalRepresentation.Circle;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
