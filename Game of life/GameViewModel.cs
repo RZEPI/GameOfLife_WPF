@@ -1,19 +1,26 @@
 ﻿using GalaSoft.MvvmLight.Command;
 using System.ComponentModel;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Game_of_life
 {
     public class GameViewModel : INotifyPropertyChanged
     {
+        private const int BaseSpeed = 1000;
+        private const double DefaultSpeed = 1;
+        private const double SpeedStep = 0.3;
+        private const int DefaultBoardSize = 100;
+
         private Board _board;
         private int _boardSize;
+        private DispatcherTimer _timer;
         private string _buttonLabel;
         private int _generationCount;
         private int _cellsBorn;
         private int _cellsDied;
         private bool _isRunning;
-        private int _speed;
+        private double _speed;
         private GraphicalRepresentation _representation;
 
         public Board Board
@@ -77,13 +84,14 @@ namespace Game_of_life
             }
         }
 
-        public int Speed
+        public double Speed
         {
             get => _speed;
             set
             {
                 _speed = value;
                 OnPropertyChanged(nameof(Speed));
+                ChangeSpeed();
             }
         }
 
@@ -117,15 +125,16 @@ namespace Game_of_life
 
         public GameViewModel()
         {
-            BoardSize = 100;
+            _timer = new DispatcherTimer();
+            _timer.Tick += OnTimerTick;
+            Speed = DefaultSpeed;
+            BoardSize = DefaultBoardSize;
             Board = new Board(BoardSize);
             ButtonLabel = "Start";
-            StepCommand = new RelayCommand(ExecuteStep, CanExecuteStep);
+            StepCommand = new RelayCommand(ExecuteStep);
             ToggleSimulationCommand = new RelayCommand(ToggleSimulation);
             ClearCommand = new RelayCommand(ClearBoard);
             RandomizeCommand = new RelayCommand(RandomizeBoard);
-            IncreaseSpeedCommand = new RelayCommand(() => Speed++);
-            DecreaseSpeedCommand = new RelayCommand(() => Speed--);
             SetBoardSizeCommand = new RelayCommand(SetBoardSize);
             ToggleCellRepresentationCommand = new RelayCommand(ToggleCellRepresentation);
             Representation = GraphicalRepresentation.Circle;
@@ -158,25 +167,33 @@ namespace Game_of_life
                 StartSimulation();
                 ButtonLabel = "Stop";
             }
-            (StepCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        }
-        private bool CanExecuteStep()
-        {
-            return _isRunning;
         }
 
         private void StartSimulation()
         {
             _isRunning = true;
+            _timer.Start();
+            CommandManager.InvalidateRequerySuggested();
         }
 
         private void StopSimulation()
         {
             _isRunning = false;
+            _timer.Stop();
+            CommandManager.InvalidateRequerySuggested();
+        }
+        private void ChangeSpeed()
+        {
+            _timer.Interval = TimeSpan.FromMilliseconds(BaseSpeed / Speed);
+        }
+        private void OnTimerTick(object sender, EventArgs e)
+        {
+            ExecuteStep();
         }
 
         private void ClearBoard()
         {
+            StopSimulation();
             Board.Clear();
             GenerationCount = 0;
             CellsBorn = 0;
@@ -185,8 +202,7 @@ namespace Game_of_life
 
         private void RandomizeBoard()
         {
-            _isRunning = false;
-            this.ClearBoard();
+            ClearBoard();
             Board.Randomize();
         }
         private void ToggleCellRepresentation()

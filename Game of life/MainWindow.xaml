@@ -17,7 +17,7 @@
             <Button Content="{Binding ButtonLabel}" Command="{Binding ToggleSimulationCommand}"/>
             <Button Content="Następny krok" Command="{Binding StepCommand}"/>
             <Label Content="Prędkość:"/>
-            <Slider Minimum="1" Maximum="10" Value="{Binding Speed}" />
+            <Slider Minimum="1" Maximum="10" Value="{Binding Speed, UpdateSourceTrigger=PropertyChanged}"  />
             <Separator Margin="10"/>
             <Label Content="Statystyki:"/>
             <TextBlock Text="{Binding GenerationCount, StringFormat='Liczba pokoleń: {0}'}" />
