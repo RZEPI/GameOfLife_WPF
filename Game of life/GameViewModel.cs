@@ -122,6 +122,8 @@ namespace Game_of_life
         public ICommand DecreaseSpeedCommand { get; }
         public ICommand SetBoardSizeCommand { get;}
         public ICommand ToggleCellRepresentationCommand { get; }
+        public ICommand SaveToFileCommand { get; }
+        public ICommand LoadFromFileCommand { get; }
 
         public GameViewModel()
         {
@@ -137,6 +139,8 @@ namespace Game_of_life
             RandomizeCommand = new RelayCommand(RandomizeBoard);
             SetBoardSizeCommand = new RelayCommand(SetBoardSize);
             ToggleCellRepresentationCommand = new RelayCommand(ToggleCellRepresentation);
+            SaveToFileCommand = new RelayCommand(SaveToFile);
+            LoadFromFileCommand = new RelayCommand(LoadFromFile);
             Representation = GraphicalRepresentation.Circle;
         }
         private void SetBoardSize()
@@ -145,7 +149,6 @@ namespace Game_of_life
                 return;
 
             Board = new Board(BoardSize);
-            RandomizeBoard();
         }
 
         private void ExecuteStep()
@@ -208,6 +211,18 @@ namespace Game_of_life
         private void ToggleCellRepresentation()
         {
             Representation = Representation == GraphicalRepresentation.Circle ? GraphicalRepresentation.Rectangle : GraphicalRepresentation.Circle;
+        }
+
+        private void SaveToFile()
+        {
+            Board.SaveToFile();
+        }
+        private void LoadFromFile()
+        {
+            if(_isRunning)
+                StopSimulation();
+
+            BoardSize = Board.LoadFromFile();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

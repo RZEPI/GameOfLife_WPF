@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.DirectoryServices;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,9 +9,9 @@ namespace Game_of_life
 {
     public class Board
     {
-        public int Rows { get; }
-        public int Columns { get; }
-        public Cell[,] Cells { get; }
+        public int Rows { get; private set; }
+        public int Columns { get; private set; }
+        public Cell[,] Cells { get; private set; }
 
         public Board(int rows) : this(rows, rows){}
 
@@ -18,16 +19,23 @@ namespace Game_of_life
         {
             Rows = rows;
             Columns = columns;
-            Cells = new Cell[rows, columns];
+            
+            CreateCellArray();
 
-            for (int i = 0; i < rows; i++)
+            Randomize();
+        }
+
+        private void CreateCellArray()
+        {
+            Cells = new Cell[Rows, Columns];
+
+            for (int i = 0; i < Rows; i++)
             {
-                for (int j = 0; j < columns; j++)
+                for (int j = 0; j < Columns; j++)
                 {
                     Cells[i, j] = new Cell();
                 }
             }
-            Randomize();
         }
 
         public void Randomize()
@@ -83,6 +91,50 @@ namespace Game_of_life
                 }
             }
             return Tuple.Create(cellsBorn, cellsDied);
+        }
+
+        public void SaveToFile()
+        {
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter("board.txt"))
+            {
+                file.WriteLine(Rows);
+                file.WriteLine(Columns);
+                for (int i = 0; i < Rows; i++)
+                {
+                    string line = "";
+                    for (int j = 0; j < Columns; j++)
+                    {
+                        line += Cells[i, j].IsAlive ? "1" : "0";
+                    }
+                    file.WriteLine(line);
+                }
+            }
+        }
+
+        public int LoadFromFile()
+        {
+            try
+            {
+                using (System.IO.StreamReader file = new System.IO.StreamReader("board.txt"))
+                {
+                    Rows = int.Parse(file.ReadLine());
+                    Columns = int.Parse(file.ReadLine());
+                    CreateCellArray();
+                    for (int i = 0; i < Rows; i++)
+                    {
+                        string line = file.ReadLine();
+                        for (int j = 0; j < Columns; j++)
+                        {
+                            Cells[i, j].IsAlive = line[j] == '1';
+                        }
+                    }
+                }
+            }
+            catch(Exception)
+            {
+                Clear();
+            }
+            return Rows;
         }
 
         private int CountAliveNeighbors(int row, int column)
