@@ -10,7 +10,7 @@
         <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="200" Margin="10">
             <Label Content="Rozmiar planszy:"/>
             <TextBox Name="BoardSizeTextBox" Text="{Binding BoardSize, UpdateSourceTrigger=PropertyChanged}" />
-            <Button Content="Ustaw rozmiar" Command="{Binding SetBoardSizeCommand}" Click="Redraw_Click"/>
+            <Button Content="Ustaw rozmiar" Command="{Binding SetBoardSizeCommand}"/>
             <Button Content="Losuj stan" Command="{Binding RandomizeCommand}" />
             <Button Content="Wyczyść" Command="{Binding ClearCommand}" />
             <Separator Margin="10"/>
@@ -23,11 +23,11 @@
             <TextBlock Text="{Binding GenerationCount, StringFormat='Liczba pokoleń: {0}'}" />
             <TextBlock Text="{Binding CellsBorn, StringFormat='Ilość narodzin: {0}'}" />
             <TextBlock Text="{Binding CellsDied, StringFormat='Ilość śmierci: {0}'}" />
-            <Button Content="Zmień reprezentację" Click="Redraw_Click" Command="{Binding ToggleCellRepresentationCommand}" Margin="0,20,0,0"/>
+            <Button Content="Zmień reprezentację" Command="{Binding ToggleCellRepresentationCommand}" Margin="0,20,0,0"/>
             <Button Content="Wczytaj z pliku" Command="{Binding LoadFromFileCommand}" Margin="0,360,0,0" />
             <Button Content="Zapisz do pliku" Command="{Binding SaveToFileCommand}" />
         </StackPanel>
 
-        <Canvas Name="GameBoard" Background="LightGray" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="220,10,10,10" />
+        <Canvas Name="GameBoard" Background="LightGray" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="220,10,10,10" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" />
     </Grid>
 </Window>

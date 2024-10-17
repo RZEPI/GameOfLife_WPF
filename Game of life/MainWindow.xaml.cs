@@ -1,12 +1,9 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace Game_of_life
@@ -16,25 +13,43 @@ namespace Game_of_life
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly int cellSize = 10;
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = new GameViewModel();
+            DataContext = new GameViewModel();
+            var viewModel = (GameViewModel)DataContext;
+            viewModel.PropertyChanged += (s, e) =>
+            {
+                
+                if (e.PropertyName == nameof(GameViewModel.Board) 
+                || e.PropertyName == nameof(GameViewModel.Representation)
+                || e.PropertyName == nameof(GameViewModel.BoardSize)
+                || e.PropertyName == nameof(GameViewModel.Zoom))
+                {
+                    DrawCells();
+                }
+            };
             DrawCells();
         }
-        private void Redraw_Click(object sender, RoutedEventArgs e)
-        { 
-            DrawCells();
-        }
-        private Shape CellRepresentation(GameViewModel.GraphicalRepresentation representation, Cell cell)
+        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            Point mousePosition = e.GetPosition(GameBoard);
+
+            double x = mousePosition.X;
+            double y = mousePosition.Y;
+            
+            var viewModel = (GameViewModel)DataContext;
+            viewModel.ToggleZoom(x, y);
+        }
+        private Shape CellRepresentation(GameViewModel.GraphicalRepresentation representation, Cell cell, int cellSize)
+        {
+            var brush = cell.IsAlive ? Brushes.Black : Brushes.White;
             if (representation == GameViewModel.GraphicalRepresentation.Circle)
                 return new Ellipse
                 {
                     Width = cellSize,
                     Height = cellSize,
-                    Fill = cell.IsAlive ? Brushes.Black : Brushes.White,
+                    Fill = brush,
                     Tag = cell
                 };
             else
@@ -42,24 +57,24 @@ namespace Game_of_life
                 {
                     Width = cellSize,
                     Height = cellSize,
-                    Fill = cell.IsAlive ? Brushes.Black : Brushes.White,
+                    Fill = brush,
                     Tag = cell
                 };
         }
 
-        private void DrawCells()
+        private void DrawCells(int colStart, int colEnd, int rowStart, int rowEnd)
         {
-            GameBoard.Children.Clear();
-
-            var gameViewModel = (GameViewModel)DataContext;   
+            var gameViewModel = (GameViewModel)DataContext;
             var board = gameViewModel.Board;
-            for(int row = 0; row < board.Rows; row++)
+            var cellSize = gameViewModel.CellSize;
+            var representation = gameViewModel.Representation;
+
+            for (int row = rowStart; row < rowEnd; row++)
             {
-                for(int column = 0; column < board.Columns; column++)
+                for (int column = colStart; column < colEnd; column++)
                 {
                     var cell = board.Cells[row, column];
-                    var representation = gameViewModel.Representation;
-                    var shape = CellRepresentation(representation, cell);
+                    var shape = CellRepresentation(representation, cell, cellSize);
 
                     cell.PropertyChanged += (s, e) =>
                     {
@@ -69,10 +84,41 @@ namespace Game_of_life
                         }
                     };
 
-                    Canvas.SetLeft(shape, column * cellSize);
-                    Canvas.SetTop(shape, row * cellSize);
+                    Canvas.SetLeft(shape, (column - colStart) * cellSize);
+                    Canvas.SetTop(shape, (row - rowStart) * cellSize);
                     GameBoard.Children.Add(shape);
                 }
+            }
+        }
+
+        private void DrawCells()
+        {
+            GameBoard.Children.Clear(); 
+
+            var gameViewModel = (GameViewModel)DataContext;   
+            var board = gameViewModel.Board;
+            var zoom = gameViewModel.Zoom;
+
+            if (zoom != null)
+            {
+                int rowStart = zoom.Item2 - 2 ;
+                int rowEnd = zoom.Item2 + 3;
+                int columnStart = zoom.Item1 - 2;
+                int columnEnd = zoom.Item1 + 3;
+                if(rowStart < 0)
+                    rowStart = 0;
+                if(rowEnd > board.Rows)
+                    rowEnd = board.Rows;
+                if(columnStart < 0)
+                    columnStart = 0;
+                if(columnEnd > board.Columns)
+                    columnEnd = board.Columns;
+
+                DrawCells(columnStart, columnEnd, rowStart, rowEnd);
+            }
+            else
+            {
+                DrawCells(0, board.Columns, 0, board.Rows);
             }
         }
     }

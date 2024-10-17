@@ -9,8 +9,9 @@ namespace Game_of_life
     {
         private const int BaseSpeed = 1000;
         private const double DefaultSpeed = 1;
-        private const double SpeedStep = 0.3;
         private const int DefaultBoardSize = 100;
+        public const int DefaultCellSize = 10;
+        public const int ZoomCellSize = 100;
 
         private Board _board;
         private int _boardSize;
@@ -20,8 +21,10 @@ namespace Game_of_life
         private int _cellsBorn;
         private int _cellsDied;
         private bool _isRunning;
+        private Tuple<int, int> _zoom;
         private double _speed;
         private GraphicalRepresentation _representation;
+        private int _cellSize;
 
         public Board Board
         {
@@ -54,6 +57,17 @@ namespace Game_of_life
                 OnPropertyChanged(nameof(GenerationCount));
             }
         }
+
+        public int CellSize
+        {
+            get => _cellSize;
+            set
+            {
+                _cellSize = value;
+                OnPropertyChanged(nameof(CellSize));
+            }
+        }
+
         public GraphicalRepresentation Representation
         {
             get => _representation;
@@ -113,6 +127,16 @@ namespace Game_of_life
                 OnPropertyChanged(nameof(ButtonLabel));
             }
         }
+        
+        public Tuple<int, int>Zoom
+        {
+            get => _zoom;
+            set
+            {
+                _zoom = value;
+                OnPropertyChanged(nameof(Zoom));
+            }
+        }
 
         public ICommand ToggleSimulationCommand { get; }
         public ICommand StepCommand { get; }
@@ -132,6 +156,9 @@ namespace Game_of_life
             Speed = DefaultSpeed;
             BoardSize = DefaultBoardSize;
             Board = new Board(BoardSize);
+            Representation = GraphicalRepresentation.Circle;
+            CellSize = DefaultCellSize;
+
             ButtonLabel = "Start";
             StepCommand = new RelayCommand(ExecuteStep);
             ToggleSimulationCommand = new RelayCommand(ToggleSimulation);
@@ -141,7 +168,7 @@ namespace Game_of_life
             ToggleCellRepresentationCommand = new RelayCommand(ToggleCellRepresentation);
             SaveToFileCommand = new RelayCommand(SaveToFile);
             LoadFromFileCommand = new RelayCommand(LoadFromFile);
-            Representation = GraphicalRepresentation.Circle;
+
         }
         private void SetBoardSize()
         {
@@ -149,6 +176,21 @@ namespace Game_of_life
                 return;
 
             Board = new Board(BoardSize);
+        }
+        public void ToggleZoom(double x=0, double y=0)
+        {
+            if (Zoom == null)
+            {
+                CellSize = ZoomCellSize;
+                int column = (int)x / DefaultCellSize;
+                int row = (int)y / DefaultCellSize;
+                Zoom = new Tuple<int, int>(column, row);
+            }
+            else
+            {
+                CellSize = DefaultCellSize;
+                Zoom = null;
+            }
         }
 
         private void ExecuteStep()
@@ -161,19 +203,14 @@ namespace Game_of_life
         private void ToggleSimulation()
         {
             if (_isRunning)
-            {
                 StopSimulation();
-                ButtonLabel = "Start";
-            }
             else
-            {
                 StartSimulation();
-                ButtonLabel = "Stop";
-            }
         }
 
         private void StartSimulation()
         {
+            ButtonLabel = "Stop";
             _isRunning = true;
             _timer.Start();
             CommandManager.InvalidateRequerySuggested();
@@ -181,6 +218,7 @@ namespace Game_of_life
 
         private void StopSimulation()
         {
+            ButtonLabel = "Start";
             _isRunning = false;
             _timer.Stop();
             CommandManager.InvalidateRequerySuggested();
@@ -211,6 +249,7 @@ namespace Game_of_life
         private void ToggleCellRepresentation()
         {
             Representation = Representation == GraphicalRepresentation.Circle ? GraphicalRepresentation.Rectangle : GraphicalRepresentation.Circle;
+            
         }
 
         private void SaveToFile()
@@ -223,6 +262,7 @@ namespace Game_of_life
                 StopSimulation();
 
             BoardSize = Board.LoadFromFile();
+            OnPropertyChanged(nameof(Board));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -236,5 +276,5 @@ namespace Game_of_life
             Rectangle,
             Circle
         }
-    }
+   }
 }
